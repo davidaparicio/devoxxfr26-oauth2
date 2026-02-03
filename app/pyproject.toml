@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "streamlit-keycloak"
+version = "0.1.0"
+description = "A Streamlit demo to interactively visualize Uber pickups in New York City"
+authors = ["David Aparicio <david.aparicio@free.fr>"]
+maintainers = ["David Aparicio <david.aparicio@free.fr>"]
+license = "Apache License 2.0"
+readme = "README.md" # {file = "README.md", content-type = "text/markdown"}
+package-mode = false
+# packages = [
+#     {include = "pipelines" },
+# ]
+
+[project]
+name = "streamlit-keycloak"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = "^3.12" #"^3.13"
+streamlit = "^1.39.0"
+altair = ">=5.4.1"
+numpy = ">=2.1.3"
+pandas = ">=2.2.3"
+pydeck = ">=0.9.1"
+opentelemetry-sdk = "^1.30.0"
+opentelemetry-instrumentation = "^0.51b0"
+opentelemetry-exporter-otlp = "^1.30.0"
+opentelemetry-api = "^1.30.0"
+opentelemetry-semantic-conventions = "^0.51b0"
+opentelemetry-instrumentation-logging = "^0.51b0"
+
+[tool.poetry.group.dev.dependencies]
+bandit = "1.7.10"
+pre-commit = "4.0.1"
+pytest = "8.3.3"
+ruff = "0.7.0"
+watchdog = "6.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.urls]
+Homepage = "https://example.com"
+Documentation = "https://readthedocs.org"
+Repository = "https://github.com/me/spam.git"
+"Bug Tracker" = "https://github.com/me/spam/issues"
+Changelog = "https://github.com/me/spam/blob/master/CHANGELOG.md"

@@ -65,9 +65,9 @@ ENV PYTHONUNBUFFERED=1 \
 # Create a non-root user and group for security (Principle of least privilege)
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 RUN groupadd --system appuser && \
-    useradd --no-log-init --system --gid appuser --no-create-home appuser && \
+    useradd --no-log-init --system --gid appuser --create-home appuser && \
     mkdir -p /tmp/matplotlib && \
-    chown -R appuser:appuser /app /tmp/matplotlib
+    chown -R appuser:appuser /app /tmp/matplotlib /home/appuser
 
 # Switch to the non-privileged user to run the application.
 USER appuser
@@ -76,7 +76,7 @@ USER appuser
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 # Copy the Streamlit source code+config into the container.
-COPY .streamlit/ .
+COPY .streamlit/ .streamlit/
 COPY app.py .
 # COPY --parents .streamlit/ assets/ app/ .
 #--parents do the same than the X follow lines, but in the same layer (dockerfile:1.7-labs)
