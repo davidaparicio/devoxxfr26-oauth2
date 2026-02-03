@@ -22,6 +22,7 @@ fi
 
 # Version configuration
 INGRESS_NGINX_VERSION=v1.14.2
+CERT_MANAGER_CHART_VERSION=v1.18.2
 KEYCLOAKX_CHART_VERSION=7.1.7
 KEYCLOAKX_APP_VERSION=26.5.1
 # oauth2-proxy (https://github.com/oauth2-proxy/oauth2-proxy)
@@ -29,7 +30,7 @@ OAUTH2_PROXY_CHART_VERSION=10.1.2
 OAUTH2_PROXY_APP_VERSION=7.14.2
 
 # Configuration
-CLUSTER_NAME="streamlit-keycloak"
+CLUSTER_NAME="streamlit"
 KIND_CONFIG="k8s/kind-config.yaml"
 
 # Parse command line arguments
@@ -57,6 +58,7 @@ while [[ $# -gt 0 ]]; do
             echo "What this script installs:"
             echo "  - Kind cluster (${CLUSTER_NAME})"
             echo "  - Ingress NGINX ${INGRESS_NGINX_VERSION}"
+            echo "  - cert-manager ${CERT_MANAGER_CHART_VERSION}"
             echo "  - KeycloakX ${KEYCLOAKX_APP_VERSION} (chart ${KEYCLOAKX_CHART_VERSION})"
             echo "  - oauth2-proxy ${OAUTH2_PROXY_APP_VERSION} (chart ${OAUTH2_PROXY_CHART_VERSION})"
             echo ""
@@ -143,6 +145,31 @@ helm upgrade --install ingress-nginx ingress-nginx \
 echo -e "  ${GREEN}✅${NC} Ingress NGINX installed"
 echo ""
 
+# Install cert-manager
+echo -e "${BLUE}📜 Installing cert-manager ${CERT_MANAGER_CHART_VERSION}...${NC}"
+helm upgrade --install cert-manager cert-manager \
+  --repo https://charts.jetstack.io \
+  --version "${CERT_MANAGER_CHART_VERSION}" \
+  --namespace cert-manager \
+  --create-namespace \
+  --set crds.enabled=true \
+  --wait
+echo -e "  ${GREEN}✅${NC} cert-manager installed"
+echo ""
+
+# Create self-signed ClusterIssuer
+echo -e "${BLUE}🔒 Creating self-signed ClusterIssuer...${NC}"
+kubectl apply -f - <<EOF
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+EOF
+echo -e "  ${GREEN}✅${NC} ClusterIssuer created"
+echo ""
+
 # Create Keycloak realm ConfigMap
 echo -e "${BLUE}📋 Creating Keycloak realm ConfigMap...${NC}"
 kubectl create namespace keycloak --dry-run=client -o yaml | kubectl apply -f -
@@ -166,22 +193,6 @@ helm upgrade --install keycloakx keycloakx \
 echo -e "  ${GREEN}✅${NC} KeycloakX installed"
 echo ""
 
-# Generate self-signed TLS certificate for Keycloak
-echo -e "${BLUE}🔒 Generating self-signed TLS certificate...${NC}"
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout /tmp/keycloak-tls.key \
-  -out /tmp/keycloak-tls.crt \
-  -subj "/CN=keycloak.127.0.0.1.nip.io" \
-  -addext "subjectAltName=DNS:keycloak.127.0.0.1.nip.io" 2>/dev/null
-kubectl create secret tls keycloak-tls \
-  --cert=/tmp/keycloak-tls.crt \
-  --key=/tmp/keycloak-tls.key \
-  --namespace keycloak \
-  --dry-run=client -o yaml | kubectl apply -f -
-rm -f /tmp/keycloak-tls.key /tmp/keycloak-tls.crt
-echo -e "  ${GREEN}✅${NC} TLS certificate created"
-echo ""
-
 # Apply Keycloak Ingress
 echo -e "${BLUE}🌐 Applying Keycloak Ingress...${NC}"
 kubectl apply -f k8s/keycloak-ingress.yaml
@@ -202,26 +213,10 @@ helm upgrade --install oauth2-proxy oauth2-proxy \
 echo -e "  ${GREEN}✅${NC} oauth2-proxy installed"
 echo ""
 
-# Generate self-signed TLS certificate for Streamlit
-echo -e "${BLUE}🔒 Generating self-signed TLS certificate for Streamlit...${NC}"
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout /tmp/streamlit-tls.key \
-  -out /tmp/streamlit-tls.crt \
-  -subj "/CN=streamlit-keycloak.127.0.0.1.nip.io" \
-  -addext "subjectAltName=DNS:streamlit-keycloak.127.0.0.1.nip.io" 2>/dev/null
-kubectl create secret tls streamlit-keycloak-tls \
-  --cert=/tmp/streamlit-tls.crt \
-  --key=/tmp/streamlit-tls.key \
-  --namespace default \
-  --dry-run=client -o yaml | kubectl apply -f -
-rm -f /tmp/streamlit-tls.key /tmp/streamlit-tls.crt
-echo -e "  ${GREEN}✅${NC} TLS certificate created"
-echo ""
-
 # Deploy Streamlit application
 echo -e "${BLUE}🚀 Deploying Streamlit application...${NC}"
-kubectl apply -f k8s/streamlit-keycloak.yaml
-kubectl rollout status deployment/streamlit-keycloak --namespace default --timeout=120s
+kubectl apply -f k8s/streamlit.yaml
+kubectl rollout status deployment/streamlit --namespace default --timeout=120s
 echo -e "  ${GREEN}✅${NC} Streamlit deployed"
 echo ""
 
@@ -231,16 +226,17 @@ echo -e "${GREEN}🎉 Setup Complete!${NC}"
 echo ""
 echo "Access Points:"
 echo -e "  ${BLUE}Keycloak Admin:${NC}  https://keycloak.127.0.0.1.nip.io:30443 (admin/admin)"
-echo -e "  ${BLUE}Streamlit App:${NC}   https://streamlit-keycloak.127.0.0.1.nip.io:30443"
+echo -e "  ${BLUE}Streamlit App:${NC}   https://streamlit.127.0.0.1.nip.io:30443"
 echo ""
 echo "Demo Credentials:"
 echo "  • Keycloak admin: admin / admin"
-echo "  • Keycloak user:  demo / demo (realm: streamlit)"
+echo "  • Keycloak user:  demo / demo"
+echo "  • Keycloak user:  demo2 / demo2 (group: beta-users)"
 echo ""
 echo "Next Steps (to enable oauth2-proxy protection):"
 echo "  Add these annotations to the Streamlit Ingress:"
-echo -e "     ${YELLOW}nginx.ingress.kubernetes.io/auth-url: https://streamlit-keycloak.127.0.0.1.nip.io:30443/oauth2/auth${NC}"
-echo -e "     ${YELLOW}nginx.ingress.kubernetes.io/auth-signin: https://streamlit-keycloak.127.0.0.1.nip.io:30443/oauth2/start?rd=\$escaped_request_uri${NC}"
+echo -e "     ${YELLOW}nginx.ingress.kubernetes.io/auth-url: http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth${NC}"
+echo -e "     ${YELLOW}nginx.ingress.kubernetes.io/auth-signin: https://streamlit.127.0.0.1.nip.io:30443/oauth2/start?rd=\$escaped_request_uri${NC}"
 echo ""
 echo "Useful Commands:"
 echo "  • Check cluster: kubectl cluster-info --context kind-${CLUSTER_NAME}"

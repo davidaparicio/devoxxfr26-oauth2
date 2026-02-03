@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: keycloak
-  namespace: keycloak
+  name: oauth2-proxy
+  namespace: oauth2-proxy
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     cert-manager.io/cluster-issuer: "selfsigned-issuer"
@@ -10,16 +10,16 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - keycloak.127.0.0.1.nip.io
-    secretName: keycloak-tls
+    - streamlit.127.0.0.1.nip.io
+    secretName: oauth2-proxy-tls
   rules:
-  - host: keycloak.127.0.0.1.nip.io
+  - host: streamlit.127.0.0.1.nip.io
     http:
       paths:
-      - path: /
+      - path: /oauth2
         pathType: Prefix
         backend:
           service:
-            name: keycloakx-http
+            name: oauth2-proxy
             port:
               number: 80

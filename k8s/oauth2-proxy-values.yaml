@@ -1,3 +1,6 @@
+# extraArgs:
+#   cookie-csrf-per-request: "false"
+#   cookie-csrf-expire: "15m"
 config:
   clientID: "oauth2-proxy"
   clientSecret: "oauth2-proxy-client-secret"
@@ -15,9 +18,9 @@ config:
     insecure_oidc_allow_unverified_email = true
     ssl_insecure_skip_verify = true
     cookie_secure = true
-    cookie_domains = [ ".127.0.0.1.nip.io" ]
     whitelist_domains = [ ".127.0.0.1.nip.io" ]
     upstreams = [ "static://200" ]
     skip_provider_button = true
-    code_challenge_method = "S256"
+    # cookie_samesite = "lax"
+    # code_challenge_method = "S256"  # Disabled: causes race condition with parallel requests
     scope = "openid email profile"
