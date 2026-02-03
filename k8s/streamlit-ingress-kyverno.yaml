@@ -1,0 +1,31 @@
+# Streamlit Ingress WITHOUT oauth2-proxy annotations
+# Kyverno will automatically add them based on the 'oauth2-proxy: enabled' label
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: streamlit
+  namespace: default
+  labels:
+    oauth2-proxy: enabled  # This label triggers Kyverno to add auth annotations
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+    # NOTE: No auth-url or auth-signin annotations here!
+    # Kyverno will add them automatically.
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - streamlit.127.0.0.1.nip.io
+    secretName: streamlit-tls
+  rules:
+  - host: streamlit.127.0.0.1.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: streamlit
+            port:
+              number: 80
