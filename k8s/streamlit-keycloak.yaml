@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamlit-keycloak
+  namespace: default
+  labels:
+    app: streamlit-keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: streamlit-keycloak
+  template:
+    metadata:
+      labels:
+        app: streamlit-keycloak
+    spec:
+      containers:
+      - name: streamlit-keycloak
+        image: quay.io/davidaparicio/streamlit-keycloak:0.5.0
+        ports:
+        - containerPort: 8501
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: streamlit-keycloak
+  namespace: default
+spec:
+  selector:
+    app: streamlit-keycloak
+  ports:
+  - port: 80
+    targetPort: 8501
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: streamlit-keycloak
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - streamlit-keycloak.127.0.0.1.nip.io
+    secretName: streamlit-keycloak-tls
+  rules:
+  - host: streamlit-keycloak.127.0.0.1.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: streamlit-keycloak
+            port:
+              number: 80

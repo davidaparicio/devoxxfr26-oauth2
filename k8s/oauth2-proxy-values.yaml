@@ -1,0 +1,23 @@
+config:
+  clientID: "oauth2-proxy"
+  clientSecret: "oauth2-proxy-client-secret"
+  cookieSecret: ""
+  configFile: |-
+    provider = "keycloak-oidc"
+    provider_display_name = "Keycloak"
+    skip_oidc_discovery = true
+    oidc_issuer_url = "https://keycloak.127.0.0.1.nip.io:30443/realms/streamlit"
+    login_url = "https://keycloak.127.0.0.1.nip.io:30443/realms/streamlit/protocol/openid-connect/auth"
+    redeem_url = "http://keycloakx-http.keycloak.svc.cluster.local/realms/streamlit/protocol/openid-connect/token"
+    oidc_jwks_url = "http://keycloakx-http.keycloak.svc.cluster.local/realms/streamlit/protocol/openid-connect/certs"
+    redirect_url = "https://streamlit.127.0.0.1.nip.io:30443/oauth2/callback"
+    email_domains = [ "*" ]
+    insecure_oidc_allow_unverified_email = true
+    ssl_insecure_skip_verify = true
+    cookie_secure = true
+    cookie_domains = [ ".127.0.0.1.nip.io" ]
+    whitelist_domains = [ ".127.0.0.1.nip.io" ]
+    upstreams = [ "static://200" ]
+    skip_provider_button = true
+    code_challenge_method = "S256"
+    scope = "openid email profile"

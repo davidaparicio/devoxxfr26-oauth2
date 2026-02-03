@@ -1,0 +1,17 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: streamlit-keycloak
+nodes:
+- role: control-plane
+  image: kindest/node:v1.35.0 # v1.34.3
+  extraPortMappings:
+  - containerPort: 30080 # ingress-nginx controller HTTP
+    hostPort: 30080
+  - containerPort: 30443 # ingress-nginx controller HTTPS
+    hostPort: 30443
+  - containerPort: 32080 # test application instance
+    hostPort: 32080
+  - containerPort: 32081 # UAT application instance
+    hostPort: 32081
+  - containerPort: 32082 # prod application instance
+    hostPort: 32082

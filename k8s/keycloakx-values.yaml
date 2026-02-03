@@ -1,0 +1,51 @@
+command:
+  - "/opt/keycloak/bin/kc.sh"
+  - "start"
+  - "--http-port=8080"
+  - "--hostname-strict=false"
+  - "--proxy-headers=xforwarded"
+  - "--hostname=https://keycloak.127.0.0.1.nip.io:30443"
+  - "--health-enabled=true"
+  - "--http-relative-path=/"
+  - "--import-realm"
+extraEnv: |
+  - name: KEYCLOAK_ADMIN
+    value: admin
+  - name: KEYCLOAK_ADMIN_PASSWORD
+    value: admin
+  - name: JAVA_OPTS_APPEND
+    value: >-
+      -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+dbchecker:
+  enabled: false
+health:
+  enabled: false
+startupProbe: |
+  httpGet:
+    path: /health/started
+    port: 9000
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 30
+readinessProbe: |
+  httpGet:
+    path: /health/ready
+    port: 9000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 3
+livenessProbe: |
+  httpGet:
+    path: /health/live
+    port: 9000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 3
+extraVolumes: |
+  - name: realm-config
+    configMap:
+      name: keycloak-realm
+extraVolumeMounts: |
+  - name: realm-config
+    mountPath: /opt/keycloak/data/import
+    readOnly: true
