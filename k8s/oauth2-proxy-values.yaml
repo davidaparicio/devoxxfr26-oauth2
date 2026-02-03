@@ -18,4 +18,4 @@ config:
     whitelist_domains = [ ".127.0.0.1.nip.io" ]
     upstreams = [ "static://200" ]
     skip_provider_button = true
-    scope = "openid email profile"
+    scope = "openid"
