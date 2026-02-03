@@ -54,8 +54,9 @@ echo -e "   ${GREEN}✅${NC} Policy created"
 echo ""
 
 # Wait for policy to be ready
-echo "   Waiting for policy to be ready..."
-sleep 3
+echo "   Waiting for policy and webhook to be ready..."
+kubectl wait --for=condition=ready clusterpolicy add-oauth2-proxy-auth --timeout=60s
+sleep 2
 
 # Step 3: Show current ingress state
 echo -e "${BLUE}3. Current Streamlit Ingress annotations:${NC}"
