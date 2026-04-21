@@ -296,6 +296,118 @@ logger.info("Page view recorded")
 logger.info("Starting data loading")
 data = load_data()
 
+# FAKE OPUS 4.8 BENCHMARK COMPARISON TABLE
+st.title("Claude Opus 4.8 — Benchmark Comparison")
+st.caption(
+    "Opus 4.8 sets a new frontier across agentic coding, reasoning, and tool use — "
+    "outperforming Opus 4.7, GPT-5.4, Gemini 3.1 Pro, and Mythos Preview."
+)
+
+benchmark_rows = [
+    ("Agentic coding", "SWE-bench Pro",            "71.2%", "64.3%", "53.4%", "57.7%", "54.2%", "77.8%"),
+    ("Agentic coding", "SWE-bench Verified",       "92.4%", "87.6%", "80.8%", "—",     "80.6%", "93.9%"),
+    ("Agentic terminal coding", "Terminal-Bench 2.0", "77.8%", "69.4%", "65.4%", "75.1%", "68.5%", "82.0%"),
+    ("Multidisciplinary reasoning", "Humanity's Last Exam (no tools)",   "53.1%", "46.9%", "40.0%", "42.7%", "44.4%", "56.8%"),
+    ("Multidisciplinary reasoning", "Humanity's Last Exam (with tools)", "62.4%", "54.7%", "53.3%", "58.7%", "51.4%", "64.7%"),
+    ("Agentic search", "BrowseComp",                "88.2%", "79.3%", "83.7%", "89.3%", "85.9%", "86.9%"),
+    ("Scaled tool use", "MCP-Atlas",                "82.5%", "77.3%", "75.8%", "68.1%", "73.9%", "—"),
+    ("Agentic computer use", "OSWorld-Verified",   "83.1%", "78.0%", "72.7%", "75.0%", "—",     "79.6%"),
+    ("Agentic financial analysis", "Finance Agent v1.1", "70.2%", "64.4%", "60.1%", "61.5%", "59.7%", "—"),
+    ("Cybersecurity vulnerability reproduction", "CyberGym", "81.6%", "73.1%", "73.8%", "66.3%", "—", "83.1%"),
+    ("Graduate-level reasoning", "GPQA Diamond",   "95.7%", "94.2%", "91.3%", "94.4%", "94.3%", "94.6%"),
+    ("Visual reasoning", "CharXiv Reasoning (no tools)",   "87.4%", "82.1%", "69.1%", "—",     "—",     "86.1%"),
+    ("Visual reasoning", "CharXiv Reasoning (with tools)", "94.3%", "91.0%", "84.7%", "—",     "—",     "93.2%"),
+    ("Multilingual Q&A", "MMMLU",                  "93.8%", "91.5%", "91.1%", "—",     "92.6%", "—"),
+]
+
+benchmark_df = pd.DataFrame(
+    benchmark_rows,
+    columns=[
+        "Capability",
+        "Benchmark",
+        "Opus 4.8",
+        "Opus 4.7",
+        "Opus 4.6",
+        "GPT-5.4",
+        "Gemini 3.1 Pro",
+        "Mythos Preview",
+    ],
+)
+
+
+def _highlight_opus_48(col):
+    if col.name == "Opus 4.8":
+        return ["background-color: #FFE5D0; font-weight: 700; color: #000"] * len(col)
+    return [""] * len(col)
+
+
+st.dataframe(
+    benchmark_df.style.apply(_highlight_opus_48, axis=0),
+    hide_index=True,
+    use_container_width=True,
+)
+
+# FAKE OPUS 4.8 EFFORT-LEVEL CHART
+st.subheader("Agentic coding performance by effort level")
+st.caption("Anthropic internal autonomous agentic coding evaluation")
+
+effort_data = pd.DataFrame(
+    [
+        # Opus 4.8 (fake — pushes the frontier up and left)
+        ("Opus 4.8", "low",    27_000, 58.2),
+        ("Opus 4.8", "medium", 41_000, 64.5),
+        ("Opus 4.8", "high",   67_000, 72.1),
+        ("Opus 4.8", "xhigh",  98_000, 78.4),
+        ("Opus 4.8", "max",   195_000, 82.3),
+        # Opus 4.7
+        ("Opus 4.7", "low",    30_000, 51.5),
+        ("Opus 4.7", "medium", 45_000, 57.0),
+        ("Opus 4.7", "high",   72_000, 65.5),
+        ("Opus 4.7", "xhigh", 105_000, 71.0),
+        ("Opus 4.7", "max",   210_000, 74.5),
+        # Opus 4.6
+        ("Opus 4.6", "low",    30_000, 39.0),
+        ("Opus 4.6", "medium", 52_000, 48.0),
+        ("Opus 4.6", "high",   82_000, 54.5),
+        ("Opus 4.6", "max",   120_000, 61.5),
+    ],
+    columns=["model", "effort", "tokens", "score"],
+)
+
+model_colors = alt.Scale(
+    domain=["Opus 4.8", "Opus 4.7", "Opus 4.6"],
+    range=["#C77B3A", "#E89968", "#3B7DD8"],
+)
+
+line_layer = (
+    alt.Chart(effort_data)
+    .mark_line(point=alt.OverlayMarkDef(size=120, filled=True))
+    .encode(
+        x=alt.X("tokens:Q", title="Total tokens", axis=alt.Axis(format="~s")),
+        y=alt.Y("score:Q", title="Score (%)", scale=alt.Scale(domain=[30, 85])),
+        color=alt.Color("model:N", scale=model_colors, legend=alt.Legend(title=None)),
+        tooltip=["model", "effort", "tokens", "score"],
+    )
+)
+
+label_layer = (
+    alt.Chart(effort_data)
+    .mark_text(align="left", dx=8, dy=-10, fontSize=12)
+    .encode(
+        x="tokens:Q",
+        y="score:Q",
+        text="effort:N",
+        color=alt.Color("model:N", scale=model_colors, legend=None),
+    )
+)
+
+st.altair_chart(
+    (line_layer + label_layer).properties(height=420),
+    use_container_width=True,
+)
+
+st.divider()
+
 # LAYING OUT THE TOP SECTION OF THE APP
 row1_1, row1_2 = st.columns((2, 3))
 
@@ -347,7 +459,7 @@ def update_query_params():
 
 
 with row1_1:
-    st.title("NYC Uber Ridesharing Data")
+    st.header("Applying Claude Opus 4.8 to NYC Uber Optimization")
     if current_span and current_span.is_recording():
         span_context = current_span.get_span_context()
         trace_id = span_context.trace_id
