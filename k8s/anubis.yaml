@@ -31,8 +31,8 @@ spec:
               value: ":9090"
             - name: TARGET
               value: "http://streamlit.default.svc.cluster.local:80"
-            - name: DIFFICULTY
-              value: "5"
+            - name: POLICY_FNAME
+              value: "/data/cfg/botPolicies.yaml"
             - name: SERVE_ROBOTS_TXT
               value: "true"
             - name: OG_PASSTHROUGH
@@ -46,6 +46,10 @@ spec:
                 secretKeyRef:
                   name: anubis-key
                   key: ED25519_PRIVATE_KEY_HEX
+          volumeMounts:
+            - name: policy
+              mountPath: /data/cfg
+              readOnly: true
           resources:
             requests:
               cpu: 100m
@@ -53,6 +57,10 @@ spec:
             limits:
               cpu: 500m
               memory: 256Mi
+      volumes:
+        - name: policy
+          configMap:
+            name: anubis-policy
 ---
 apiVersion: v1
 kind: Service

@@ -39,9 +39,16 @@ else
     echo -e "    ${GREEN}✅${NC} Secret created"
 fi
 
+# Apply the custom bot policy (overrides upstream weight thresholds so browsers
+# actually hit a visible PoW difficulty — the DIFFICULTY env var is otherwise
+# masked by the embedded threshold rules).
+echo "  Applying anubis-policy ConfigMap..."
+kubectl apply -f k8s/anubis-policy.yaml
+
 # Apply the Anubis Deployment and Service.
 echo "  Applying Anubis manifest..."
 kubectl apply -f k8s/anubis.yaml
+kubectl rollout restart deployment/anubis --namespace default >/dev/null 2>&1 || true
 kubectl rollout status deployment/anubis --namespace default --timeout=120s
 echo -e "    ${GREEN}✅${NC} Anubis deployed"
 
