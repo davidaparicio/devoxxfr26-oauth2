@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anubis
+  namespace: default
+  labels:
+    app: anubis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anubis
+  template:
+    metadata:
+      labels:
+        app: anubis
+    spec:
+      containers:
+        - name: anubis
+          image: ghcr.io/techarohq/anubis:v1.25.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 9090
+          env:
+            - name: BIND
+              value: ":8080"
+            - name: METRICS_BIND
+              value: ":9090"
+            - name: TARGET
+              value: "http://streamlit.default.svc.cluster.local:80"
+            - name: DIFFICULTY
+              value: "5"
+            - name: SERVE_ROBOTS_TXT
+              value: "true"
+            - name: OG_PASSTHROUGH
+              value: "true"
+            - name: OG_EXPIRY_TIME
+              value: "24h"
+            - name: COOKIE_DOMAIN
+              value: "streamlit.127.0.0.1.nip.io"
+            - name: ED25519_PRIVATE_KEY_HEX
+              valueFrom:
+                secretKeyRef:
+                  name: anubis-key
+                  key: ED25519_PRIVATE_KEY_HEX
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anubis
+  namespace: default
+  labels:
+    app: anubis
+spec:
+  selector:
+    app: anubis
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

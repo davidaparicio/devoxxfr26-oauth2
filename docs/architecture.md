@@ -140,3 +140,55 @@ OAuth2-Proxy injecte automatiquement les headers suivants vers l'application pro
 
 - **Rôle** : Point d'entrée du cluster
 - **Fonction** : Routage TLS, load balancing
+
+### Anubis (optionnel)
+
+- **Rôle** : Reverse proxy anti-scraping (Proof-of-Work)
+- **Port** : 8080 (HTTP), 9090 (metrics)
+- **Fonction** : Impose un challenge JavaScript aux clients avant de relayer la requête vers Streamlit. Protège contre les bots et les scrapers IA même lorsqu'ils disposent d'une session OIDC valide.
+
+## Ajout d'Anubis (Anti-AI scraping)
+
+Anubis est activé en option via `./anubis.sh` et s'insère **après** la couche OAuth2, entre l'Ingress Streamlit et le Service Streamlit. Les routes `/oauth2/*` et la sous-requête d'authentification (`auth_request` NGINX) ciblent directement le Service `oauth2-proxy` via DNS cluster-interne : elles ne transitent jamais par Anubis, ce qui garantit que le flux OIDC (login, callback, refresh) reste intact.
+
+```mermaid
+flowchart TB
+    U[👤 Utilisateur<br/>Navigateur]
+
+    subgraph "Kubernetes Cluster"
+        ING[🌐 Ingress NGINX]
+        OP[🔐 OAuth2-Proxy<br/>Port 4180]
+        AN[🛡️ Anubis<br/>Port 8080<br/>PoW Challenge]
+        ST[📊 Streamlit<br/>Port 8501]
+        KC[🔑 Keycloak<br/>Port 8080]
+    end
+
+    U -->|/oauth2/*| ING
+    U -->|/| ING
+    ING -->|auth subrequest<br/>(bypass Anubis)| OP
+    ING -->|/oauth2/*<br/>(bypass Anubis)| OP
+    ING -->|/ authenticated| AN
+    AN -->|Proof-of-Work OK| ST
+    OP <--> KC
+
+    style U fill:#e1f5fe
+    style OP fill:#fff3e0
+    style AN fill:#ffe0b2
+    style ST fill:#e8f5e9
+    style KC fill:#fce4ec
+    style ING fill:#f3e5f5
+```
+
+### Flux avec Anubis activé
+
+1. L'utilisateur non authentifié est redirigé vers Keycloak par `oauth2-proxy` (comportement inchangé).
+2. Après authentification, NGINX relaie la requête `/` vers le Service `anubis` (et non plus directement vers `streamlit`).
+3. Anubis sert une page "Making sure you're not a bot" qui exécute un calcul SHA-256 côté navigateur.
+4. Une fois le challenge résolu, un cookie signé (ED25519) est posé et Anubis relaie la requête vers le Service `streamlit`.
+5. Les requêtes suivantes avec le cookie valide passent directement (aucun re-challenge dans la fenêtre configurée par `OG_EXPIRY_TIME`).
+
+### Pistes d'amélioration (hors scope v1)
+
+- Monter un `ConfigMap` `botPolicies.yaml` via `POLICY_FNAME` pour affiner les règles par User-Agent, ASN ou chemin.
+- Scraper l'endpoint Prometheus `:9090` pour suivre le taux de challenges résolus / échoués.
+- Passer Anubis en sidecar de Streamlit si l'on préfère co-localiser pod et challenger.
