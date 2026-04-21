@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: anubis-policy
+  namespace: default
+  labels:
+    app: anubis
+data:
+  botPolicies.yaml: |
+    # Custom policy: inherits the upstream default bot/crawler rules via the
+    # data macro, then overrides the weight thresholds so a normal browser
+    # (weight 10, from the generic-browser rule) lands at difficulty 5
+    # instead of the upstream default of 2. The DIFFICULTY env var is not
+    # consulted when thresholds are defined.
+    bots:
+      - import: (data)/meta/default-config.yaml
+
+    dnsbl: false
+
+    status_codes:
+      CHALLENGE: 200
+      DENY: 200
+
+    store:
+      backend: memory
+      parameters: {}
+
+    thresholds:
+      - name: minimal-suspicion
+        expression: weight <= 0
+        action: ALLOW
+      - name: mild-suspicion
+        expression:
+          all:
+            - weight > 0
+            - weight < 10
+        action: CHALLENGE
+        challenge:
+          algorithm: metarefresh
+          difficulty: 1
+      - name: browser-proof-of-work
+        expression:
+          all:
+            - weight >= 10
+            - weight < 20
+        action: CHALLENGE
+        challenge:
+          algorithm: fast
+          difficulty: 5
+      - name: extreme-suspicion
+        expression: weight >= 20
+        action: CHALLENGE
+        challenge:
+          algorithm: fast
+          difficulty: 7
