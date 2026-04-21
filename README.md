@@ -7,6 +7,7 @@ Local Kubernetes demo of Streamlit authentication via Keycloak and OAuth2-Proxy.
 ```bash
 ./install.sh    # Create KIND cluster, install all components
 ./secure.sh     # Enable OAuth2-Proxy authentication
+./anubis.sh     # (optional) Add Anubis AI-scraping PoW challenge
 ```
 
 **Access:**
@@ -25,6 +26,7 @@ Local Kubernetes demo of Streamlit authentication via Keycloak and OAuth2-Proxy.
 | `secure.sh` | Enable OAuth2-Proxy authentication for Streamlit |
 | `group.sh` | Restrict access to `beta-users` group only |
 | `kyverno.sh` | Demo Kyverno policy enforcement (auto-adds auth annotations) |
+| `anubis.sh` | Add Anubis proof-of-work challenge in front of Streamlit (post-OAuth2) |
 
 ## Cleanup
 
@@ -36,6 +38,7 @@ kind delete cluster --name streamlit
 
 - **Keycloak**: Identity provider (OIDC)
 - **OAuth2-Proxy**: Authentication proxy
+- **Anubis** (optional): AI-scraping proof-of-work challenger, sits between the Streamlit Ingress and the Streamlit Service
 - **Streamlit**: Demo application
 - **nginx-ingress**: TLS termination
 - **cert-manager**: Self-signed certificates

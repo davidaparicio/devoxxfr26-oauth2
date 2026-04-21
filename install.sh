@@ -28,6 +28,8 @@ KEYCLOAKX_APP_VERSION=26.5.1
 # oauth2-proxy (https://github.com/oauth2-proxy/oauth2-proxy)
 OAUTH2_PROXY_CHART_VERSION=10.1.2
 OAUTH2_PROXY_APP_VERSION=7.14.2
+# anubis (https://github.com/TecharoHQ/anubis) — installed on demand by ./anubis.sh
+ANUBIS_VERSION=v1.25.0
 
 # Configuration
 CLUSTER_NAME="streamlit"
@@ -237,6 +239,11 @@ echo "Next Steps (to enable oauth2-proxy protection):"
 echo "  Add these annotations to the Streamlit Ingress:"
 echo -e "     ${YELLOW}nginx.ingress.kubernetes.io/auth-url: http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth${NC}"
 echo -e "     ${YELLOW}nginx.ingress.kubernetes.io/auth-signin: https://streamlit.127.0.0.1.nip.io:30443/oauth2/start?rd=\$escaped_request_uri${NC}"
+echo ""
+echo "Optional protection layers:"
+echo -e "  • ${YELLOW}./secure.sh${NC}   Enable OAuth2 authentication"
+echo -e "  • ${YELLOW}./kyverno.sh${NC}  Auto-inject auth annotations via a Kyverno policy"
+echo -e "  • ${YELLOW}./anubis.sh${NC}   Add Anubis ${ANUBIS_VERSION} AI-scraping PoW challenge"
 echo ""
 echo "Useful Commands:"
 echo "  • Check cluster: kubectl cluster-info --context kind-${CLUSTER_NAME}"
