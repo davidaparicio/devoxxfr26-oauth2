@@ -19,3 +19,11 @@ config:
     upstreams = [ "static://200" ]
     skip_provider_button = true
     scope = "openid"
+    # First-login CSRF fix: when the browser fires parallel requests before the
+    # redirect to Keycloak lands (prefetch, favicon, Streamlit static assets),
+    # each /oauth2/start would overwrite a single shared _oauth2_proxy_csrf
+    # cookie — then Keycloak's callback state no longer matches → 403 "Unable
+    # to find a valid CSRF token". Per-request cookies use a unique name per
+    # flow so concurrent flows don't trample each other.
+    cookie_csrf_per_request = true
+    cookie_csrf_expire = "5m"
