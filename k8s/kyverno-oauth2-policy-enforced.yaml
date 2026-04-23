@@ -1,0 +1,29 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: enforce-oauth2-proxy-auth
+  annotations:
+    policies.kyverno.io/title: Enforce OAuth2 Proxy Authentication
+    policies.kyverno.io/category: Security
+    policies.kyverno.io/description: >-
+      Automatically adds oauth2-proxy authentication annotations to EVERY
+      Ingress in the default namespace. Unlike add-oauth2-proxy-auth, this
+      policy has no label selector — you cannot opt out by omitting a label.
+      Scoped to the default namespace so it never touches keycloak or
+      oauth2-proxy's own ingresses.
+spec:
+  rules:
+    - name: add-oauth2-annotations
+      match:
+        any:
+          - resources:
+              kinds:
+                - Ingress
+              namespaces:
+                - default
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth"
+              nginx.ingress.kubernetes.io/auth-signin: "https://streamlit.127.0.0.1.nip.io:30443/oauth2/start?rd=$escaped_request_uri"
