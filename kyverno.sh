@@ -32,29 +32,61 @@ fi
 echo -e "${BLUE}🛡️ Kyverno Policy Enforcement Demo${NC}"
 echo ""
 
-# Step 1: Install Kyverno
+# Step 1: Install Kyverno if missing. Skip helm when already installed to
+# avoid re-triggering post-upgrade hooks (kyverno-clean-reports) that can
+# flake on ImagePullBackOff in kind.
 echo -e "${BLUE}1. Installing Kyverno ${KYVERNO_CHART_VERSION}...${NC}"
-helm upgrade --install kyverno kyverno \
-  --repo https://kyverno.github.io/kyverno \
-  --version "${KYVERNO_CHART_VERSION}" \
-  --namespace kyverno \
-  --create-namespace \
-  --set admissionController.replicas=1 \
-  --set backgroundController.replicas=1 \
-  --set cleanupController.replicas=1 \
-  --set reportsController.replicas=1 \
-  --wait
-echo -e "   ${GREEN}✅${NC} Kyverno installed"
+if kubectl get deployment kyverno-admission-controller -n kyverno >/dev/null 2>&1; then
+    echo -e "   ${GREEN}✅${NC} Kyverno already installed (skipping helm)"
+else
+    helm upgrade --install kyverno kyverno \
+      --repo https://kyverno.github.io/kyverno \
+      --version "${KYVERNO_CHART_VERSION}" \
+      --namespace kyverno \
+      --create-namespace \
+      --set admissionController.replicas=1 \
+      --set backgroundController.replicas=1 \
+      --set cleanupController.replicas=1 \
+      --set reportsController.replicas=1 \
+      --wait
+    echo -e "   ${GREEN}✅${NC} Kyverno installed"
+fi
 echo ""
 
-# Step 2: Apply the oauth2-proxy policy
+# helm --wait returns as soon as deployments are Available, but the Kyverno
+# admission webhook needs a few extra seconds to register its endpoints and
+# finish TLS bootstrap. Applying a policy too early yields "connection refused"
+# from the webhook. Wait for the service to have real endpoints.
+echo -n "   Waiting for kyverno webhook endpoints..."
+for i in $(seq 1 30); do
+    if [[ -n "$(kubectl get endpoints kyverno-svc -n kyverno -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null)" ]]; then
+        echo -e " ${GREEN}✅${NC}"
+        break
+    fi
+    echo -n "."
+    sleep 2
+done
+
+# Step 2: Apply the oauth2-proxy policy (retry if webhook is still warming up)
 echo -e "${BLUE}2. Creating Kyverno policy for oauth2-proxy annotations...${NC}"
-kubectl apply -f k8s/kyverno-oauth2-policy.yaml
+for attempt in 1 2 3 4 5; do
+    if out=$(kubectl apply -f k8s/kyverno-oauth2-policy.yaml 2>&1); then
+        echo "$out"
+        break
+    fi
+    if echo "$out" | grep -qE "connection refused|no endpoints available|context deadline|failed to call webhook"; then
+        echo -e "   ${YELLOW}retry ${attempt}/5 — webhook still warming up${NC}"
+        sleep 3
+    else
+        echo "$out" >&2
+        exit 1
+    fi
+done
 echo -e "   ${GREEN}✅${NC} Policy created"
 echo ""
 
 # Wait for policy to be ready
-echo "   Waiting for policy and webhook to be ready..."
+echo "   Waiting for policy to reconcile..."
 kubectl wait --for=condition=ready clusterpolicy add-oauth2-proxy-auth --timeout=60s
 sleep 2
 
