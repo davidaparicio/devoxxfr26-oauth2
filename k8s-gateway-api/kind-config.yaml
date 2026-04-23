@@ -1,0 +1,11 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: streamlit
+nodes:
+- role: control-plane
+  image: kindest/node:v1.35.0
+  extraPortMappings:
+  - containerPort: 30080 # NGF HTTP
+    hostPort: 30080
+  - containerPort: 30443 # NGF HTTPS
+    hostPort: 30443

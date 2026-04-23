@@ -1,0 +1,35 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: streamlit
+  namespace: oauth2-proxy
+spec:
+  parentRefs:
+    - name: demo
+      namespace: nginx-gateway
+      sectionName: streamlit-https
+  hostnames:
+    - streamlit.127.0.0.1.nip.io
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        # Kind exposes HTTPS on nodePort 30443, but NGF forwards the Host
+        # header without the port. oauth2-proxy would then build post-login
+        # redirects as https://streamlit.127.0.0.1.nip.io/ (port 443, not
+        # mapped). We inject X-Forwarded-Host with the external port so
+        # oauth2-proxy's reverse_proxy mode preserves :30443 in redirects.
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            set:
+              - name: X-Forwarded-Host
+                value: streamlit.127.0.0.1.nip.io:30443
+              - name: X-Forwarded-Proto
+                value: https
+              - name: X-Forwarded-Port
+                value: "30443"
+      backendRefs:
+        - name: oauth2-proxy
+          port: 80

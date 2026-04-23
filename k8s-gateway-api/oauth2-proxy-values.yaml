@@ -1,0 +1,40 @@
+config:
+  clientID: "oauth2-proxy"
+  clientSecret: "oauth2-proxy-client-secret"
+  cookieSecret: ""
+  configFile: |-
+    provider = "keycloak-oidc"
+    provider_display_name = "Keycloak"
+    skip_oidc_discovery = true
+    oidc_issuer_url = "https://keycloak.127.0.0.1.nip.io:30443/realms/streamlit"
+    login_url = "https://keycloak.127.0.0.1.nip.io:30443/realms/streamlit/protocol/openid-connect/auth"
+    redeem_url = "http://keycloakx-http.keycloak.svc.cluster.local/realms/streamlit/protocol/openid-connect/token"
+    oidc_jwks_url = "http://keycloakx-http.keycloak.svc.cluster.local/realms/streamlit/protocol/openid-connect/certs"
+    redirect_url = "https://streamlit.127.0.0.1.nip.io:30443/oauth2/callback"
+    email_domains = [ "*" ]
+    insecure_oidc_allow_unverified_email = true
+    ssl_insecure_skip_verify = true
+    cookie_secure = true
+    whitelist_domains = [ ".127.0.0.1.nip.io" ]
+    # Unlike the k8s/ setup (static://200 + nginx auth-url subrequest),
+    # here oauth2-proxy is a real reverse proxy: all traffic transits through
+    # it, and authenticated requests are forwarded to anubis → streamlit.
+    # No nginx-specific annotations required — portable across Gateway API
+    # implementations.
+    upstreams = [ "http://anubis.default.svc.cluster.local:80" ]
+    reverse_proxy = true
+    pass_host_header = true
+    pass_authorization_header = true
+    pass_access_token = true
+    set_authorization_header = true
+    set_xauthrequest = true
+    skip_provider_button = true
+    scope = "openid"
+    # First-login CSRF fix: when the browser fires parallel requests before the
+    # redirect to Keycloak lands (prefetch, favicon, Streamlit static assets),
+    # each /oauth2/start would overwrite a single shared _oauth2_proxy_csrf
+    # cookie — then Keycloak's callback state no longer matches → 403 "Unable
+    # to find a valid CSRF token". Per-request cookies use a unique name per
+    # flow so concurrent flows don't trample each other.
+    cookie_csrf_per_request = true
+    cookie_csrf_expire = "5m"
