@@ -64,13 +64,15 @@ echo ""
 # -----------------------------------------------------------------------------
 full_login() {
     local cookies; cookies=$(mktemp)
-    local login_url form_action callback_url code
+    local body form_action callback_url code
 
-    login_url=$(curl -sk -c "$cookies" -o /dev/null -w "%{redirect_url}" "${STREAMLIT_URL}/")
-    [[ -z "$login_url" ]] && { rm -f "$cookies"; echo 000; return; }
-
-    form_action=$(curl -sk -b "$cookies" -c "$cookies" "$login_url" \
-        | grep -oE 'action="[^"]+"' | head -1 | sed 's/action="//;s/"$//' | sed 's/\&amp;/\&/g')
+    # -L follows the redirect chain all the way to the Keycloak login form.
+    # This handles both the upstream-proxy flow (GET / → 302 Keycloak, one hop)
+    # and the auth-url/auth-signin flow (GET / → 302 /oauth2/start → 302
+    # Keycloak, two hops) without branching on topology.
+    body=$(curl -sk -L -b "$cookies" -c "$cookies" "${STREAMLIT_URL}/")
+    form_action=$(echo "$body" | grep -oE 'action="[^"]+"' | head -1 \
+        | sed 's/action="//;s/"$//' | sed 's/\&amp;/\&/g')
     [[ -z "$form_action" ]] && { rm -f "$cookies"; echo 000; return; }
 
     callback_url=$(curl -sk -b "$cookies" -c "$cookies" -o /dev/null -w "%{redirect_url}" \

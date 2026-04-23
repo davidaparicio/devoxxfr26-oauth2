@@ -242,6 +242,7 @@ echo -e "     ${YELLOW}nginx.ingress.kubernetes.io/auth-signin: https://streamli
 echo ""
 echo "Optional protection layers:"
 echo -e "  • ${YELLOW}./secure.sh${NC}   Enable OAuth2 authentication"
+echo -e "  • ${YELLOW}./group.sh${NC}    Restrict access to 'beta-users' group via OAuth2-Proxy configuration"
 echo -e "  • ${YELLOW}./kyverno.sh${NC}  Auto-inject auth annotations via a Kyverno policy"
 echo -e "  • ${YELLOW}./anubis.sh${NC}   Add Anubis ${ANUBIS_VERSION} AI-scraping PoW challenge"
 echo ""
