@@ -296,28 +296,28 @@ logger.info("Page view recorded")
 logger.info("Starting data loading")
 data = load_data()
 
-# FAKE OPUS 4.8 BENCHMARK COMPARISON TABLE
-st.title("Claude Opus 4.8 — Benchmark Comparison")
+# FAKE OPUS 4.9 BENCHMARK COMPARISON TABLE
+st.title("Claude Opus 4.9 — Benchmark Comparison")
 st.caption(
-    "Opus 4.8 leads across agentic coding, reasoning, and computer use — "
-    "compared to Opus 4.7, GPT-5.5, and Gemini 3.5 Flash."
+    "Opus 4.9 (6 June 2026) sets a new frontier across every capability — "
+    "outperforming Opus 4.8, GPT-5.5, and Gemini 3.5 Flash."
 )
 
 benchmark_rows = [
-    ("Agentic coding", "SWE-bench Pro",            "69.2%", "64.3%", "53.4%", "58.6%", "55.1%", "77.8%"),
-    ("Agentic coding", "SWE-bench Verified",       "92.4%", "87.6%", "80.8%", "—",     "—",     "93.9%"),
-    ("Agentic terminal coding", "Terminal-Bench 2.1", "74.6%", "66.1%", "65.4%", "78.2%", "76.2%", "82.0%"),
-    ("Multidisciplinary reasoning", "Humanity's Last Exam (no tools)",   "49.8%", "46.9%", "40.0%", "41.4%", "40.2%", "56.8%"),
-    ("Multidisciplinary reasoning", "Humanity's Last Exam (with tools)", "57.9%", "54.7%", "53.3%", "52.2%", "—",     "64.7%"),
-    ("Agentic search", "BrowseComp",                "88.2%", "79.3%", "83.7%", "89.3%", "—",     "86.9%"),
-    ("Scaled tool use", "MCP-Atlas",                "82.5%", "77.3%", "75.8%", "68.1%", "83.6%", "—"),
-    ("Agentic computer use", "OSWorld-Verified",   "83.4%", "82.8%", "72.7%", "78.7%", "78.4%", "79.6%"),
-    ("Agentic financial analysis", "Finance Agent v2", "53.9%", "51.5%", "60.1%", "51.8%", "57.9%", "—"),
-    ("Cybersecurity vulnerability reproduction", "CyberGym", "81.6%", "73.1%", "73.8%", "66.3%", "—", "83.1%"),
-    ("Graduate-level reasoning", "GPQA Diamond",   "95.7%", "94.2%", "91.3%", "94.4%", "—",     "94.6%"),
-    ("Visual reasoning", "CharXiv Reasoning (no tools)",   "87.4%", "82.1%", "69.1%", "—",     "84.2%", "86.1%"),
-    ("Visual reasoning", "CharXiv Reasoning (with tools)", "94.3%", "91.0%", "84.7%", "—",     "—",     "93.2%"),
-    ("Multilingual Q&A", "MMMLU",                  "93.8%", "91.5%", "91.1%", "—",     "—",     "—"),
+    ("Agentic coding", "SWE-bench Pro",            "73.8%", "69.2%", "64.3%", "53.4%", "58.6%", "55.1%", "77.8%"),
+    ("Agentic coding", "SWE-bench Verified",       "95.6%", "92.4%", "87.6%", "80.8%", "—",     "—",     "93.9%"),
+    ("Agentic terminal coding", "Terminal-Bench 2.1", "79.1%", "74.6%", "66.1%", "65.4%", "78.2%", "76.2%", "82.0%"),
+    ("Multidisciplinary reasoning", "Humanity's Last Exam (no tools)",   "53.7%", "49.8%", "46.9%", "40.0%", "41.4%", "40.2%", "56.8%"),
+    ("Multidisciplinary reasoning", "Humanity's Last Exam (with tools)", "62.3%", "57.9%", "54.7%", "53.3%", "52.2%", "—",     "64.7%"),
+    ("Agentic search", "BrowseComp",                "91.4%", "88.2%", "79.3%", "83.7%", "89.3%", "—",     "86.9%"),
+    ("Scaled tool use", "MCP-Atlas",                "86.0%", "82.5%", "77.3%", "75.8%", "68.1%", "83.6%", "—"),
+    ("Agentic computer use", "OSWorld-Verified",   "86.2%", "83.4%", "82.8%", "72.7%", "78.7%", "78.4%", "79.6%"),
+    ("Agentic financial analysis", "Finance Agent v2", "57.4%", "53.9%", "51.5%", "60.1%", "51.8%", "57.9%", "—"),
+    ("Cybersecurity vulnerability reproduction", "CyberGym", "85.1%", "81.6%", "73.1%", "73.8%", "66.3%", "—", "83.1%"),
+    ("Graduate-level reasoning", "GPQA Diamond",   "97.1%", "95.7%", "94.2%", "91.3%", "94.4%", "—",     "94.6%"),
+    ("Visual reasoning", "CharXiv Reasoning (no tools)",   "90.3%", "87.4%", "82.1%", "69.1%", "—",     "84.2%", "86.1%"),
+    ("Visual reasoning", "CharXiv Reasoning (with tools)", "96.4%", "94.3%", "91.0%", "84.7%", "—",     "—",     "93.2%"),
+    ("Multilingual Q&A", "MMMLU",                  "95.3%", "93.8%", "91.5%", "91.1%", "—",     "—",     "—"),
 ]
 
 benchmark_df = pd.DataFrame(
@@ -325,6 +325,7 @@ benchmark_df = pd.DataFrame(
     columns=[
         "Capability",
         "Benchmark",
+        "Opus 4.9",
         "Opus 4.8",
         "Opus 4.7",
         "Opus 4.6",
@@ -335,25 +336,31 @@ benchmark_df = pd.DataFrame(
 )
 
 
-def _highlight_opus_48(col):
-    if col.name == "Opus 4.8":
+def _highlight_opus_49(col):
+    if col.name == "Opus 4.9":
         return ["background-color: #FFE5D0; font-weight: 700; color: #000"] * len(col)
     return [""] * len(col)
 
 
 st.dataframe(
-    benchmark_df.style.apply(_highlight_opus_48, axis=0),
+    benchmark_df.style.apply(_highlight_opus_49, axis=0),
     hide_index=True,
     use_container_width=True,
 )
 
-# FAKE OPUS 4.8 EFFORT-LEVEL CHART
+# FAKE OPUS 4.9 EFFORT-LEVEL CHART
 st.subheader("Agentic coding performance by effort level")
 st.caption("Anthropic internal autonomous agentic coding evaluation")
 
 effort_data = pd.DataFrame(
     [
-        # Opus 4.8 (fake — pushes the frontier up and left)
+        # Opus 4.9 (fake June 2026 — new frontier)
+        ("Opus 4.9", "low",    25_000, 62.4),
+        ("Opus 4.9", "medium", 38_000, 69.1),
+        ("Opus 4.9", "high",   61_000, 76.8),
+        ("Opus 4.9", "xhigh",  90_000, 83.2),
+        ("Opus 4.9", "max",   180_000, 87.5),
+        # Opus 4.8
         ("Opus 4.8", "low",    27_000, 58.2),
         ("Opus 4.8", "medium", 41_000, 64.5),
         ("Opus 4.8", "high",   67_000, 72.1),
@@ -375,8 +382,8 @@ effort_data = pd.DataFrame(
 )
 
 model_colors = alt.Scale(
-    domain=["Opus 4.8", "Opus 4.7", "Opus 4.6"],
-    range=["#C77B3A", "#E89968", "#3B7DD8"],
+    domain=["Opus 4.9", "Opus 4.8", "Opus 4.7", "Opus 4.6"],
+    range=["#8B3A1A", "#C77B3A", "#E89968", "#3B7DD8"],
 )
 
 line_layer = (
@@ -384,7 +391,7 @@ line_layer = (
     .mark_line(point=alt.OverlayMarkDef(size=120, filled=True))
     .encode(
         x=alt.X("tokens:Q", title="Total tokens", axis=alt.Axis(format="~s")),
-        y=alt.Y("score:Q", title="Score (%)", scale=alt.Scale(domain=[30, 85])),
+        y=alt.Y("score:Q", title="Score (%)", scale=alt.Scale(domain=[30, 90])),
         color=alt.Color("model:N", scale=model_colors, legend=alt.Legend(title=None)),
         tooltip=["model", "effort", "tokens", "score"],
     )
