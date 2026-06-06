@@ -300,24 +300,24 @@ data = load_data()
 st.title("Claude Opus 4.8 — Benchmark Comparison")
 st.caption(
     "Opus 4.8 sets a new frontier across agentic coding, reasoning, and tool use — "
-    "outperforming Opus 4.7, GPT-5.4, Gemini 3.1 Pro, and Mythos Preview."
+    "outperforming Opus 4.7, GPT-5.4, Gemini 3.5 Flash, and Mythos Preview."
 )
 
 benchmark_rows = [
-    ("Agentic coding", "SWE-bench Pro",            "71.2%", "64.3%", "53.4%", "57.7%", "54.2%", "77.8%"),
-    ("Agentic coding", "SWE-bench Verified",       "92.4%", "87.6%", "80.8%", "—",     "80.6%", "93.9%"),
-    ("Agentic terminal coding", "Terminal-Bench 2.0", "77.8%", "69.4%", "65.4%", "75.1%", "68.5%", "82.0%"),
-    ("Multidisciplinary reasoning", "Humanity's Last Exam (no tools)",   "53.1%", "46.9%", "40.0%", "42.7%", "44.4%", "56.8%"),
-    ("Multidisciplinary reasoning", "Humanity's Last Exam (with tools)", "62.4%", "54.7%", "53.3%", "58.7%", "51.4%", "64.7%"),
-    ("Agentic search", "BrowseComp",                "88.2%", "79.3%", "83.7%", "89.3%", "85.9%", "86.9%"),
-    ("Scaled tool use", "MCP-Atlas",                "82.5%", "77.3%", "75.8%", "68.1%", "73.9%", "—"),
-    ("Agentic computer use", "OSWorld-Verified",   "83.1%", "78.0%", "72.7%", "75.0%", "—",     "79.6%"),
-    ("Agentic financial analysis", "Finance Agent v1.1", "70.2%", "64.4%", "60.1%", "61.5%", "59.7%", "—"),
+    ("Agentic coding", "SWE-bench Pro",            "71.2%", "64.3%", "53.4%", "57.7%", "55.1%", "77.8%"),
+    ("Agentic coding", "SWE-bench Verified",       "92.4%", "87.6%", "80.8%", "—",     "—",     "93.9%"),
+    ("Agentic terminal coding", "Terminal-Bench 2.1", "77.8%", "69.4%", "65.4%", "75.1%", "76.2%", "82.0%"),
+    ("Multidisciplinary reasoning", "Humanity's Last Exam (no tools)",   "53.1%", "46.9%", "40.0%", "42.7%", "40.2%", "56.8%"),
+    ("Multidisciplinary reasoning", "Humanity's Last Exam (with tools)", "62.4%", "54.7%", "53.3%", "58.7%", "—",     "64.7%"),
+    ("Agentic search", "BrowseComp",                "88.2%", "79.3%", "83.7%", "89.3%", "—",     "86.9%"),
+    ("Scaled tool use", "MCP-Atlas",                "82.5%", "77.3%", "75.8%", "68.1%", "83.6%", "—"),
+    ("Agentic computer use", "OSWorld-Verified",   "83.1%", "78.0%", "72.7%", "75.0%", "78.4%", "79.6%"),
+    ("Agentic financial analysis", "Finance Agent v2", "70.2%", "64.4%", "60.1%", "61.5%", "57.9%", "—"),
     ("Cybersecurity vulnerability reproduction", "CyberGym", "81.6%", "73.1%", "73.8%", "66.3%", "—", "83.1%"),
-    ("Graduate-level reasoning", "GPQA Diamond",   "95.7%", "94.2%", "91.3%", "94.4%", "94.3%", "94.6%"),
-    ("Visual reasoning", "CharXiv Reasoning (no tools)",   "87.4%", "82.1%", "69.1%", "—",     "—",     "86.1%"),
+    ("Graduate-level reasoning", "GPQA Diamond",   "95.7%", "94.2%", "91.3%", "94.4%", "—",     "94.6%"),
+    ("Visual reasoning", "CharXiv Reasoning (no tools)",   "87.4%", "82.1%", "69.1%", "—",     "84.2%", "86.1%"),
     ("Visual reasoning", "CharXiv Reasoning (with tools)", "94.3%", "91.0%", "84.7%", "—",     "—",     "93.2%"),
-    ("Multilingual Q&A", "MMMLU",                  "93.8%", "91.5%", "91.1%", "—",     "92.6%", "—"),
+    ("Multilingual Q&A", "MMMLU",                  "93.8%", "91.5%", "91.1%", "—",     "—",     "—"),
 ]
 
 benchmark_df = pd.DataFrame(
@@ -329,7 +329,7 @@ benchmark_df = pd.DataFrame(
         "Opus 4.7",
         "Opus 4.6",
         "GPT-5.4",
-        "Gemini 3.1 Pro",
+        "Gemini 3.5 Flash",
         "Mythos Preview",
     ],
 )
