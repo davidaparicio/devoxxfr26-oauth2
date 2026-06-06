@@ -297,10 +297,11 @@ logger.info("Starting data loading")
 data = load_data()
 
 # FAKE OPUS 4.9 BENCHMARK COMPARISON TABLE
-st.title("Claude Opus 4.9 — Benchmark Comparison")
+st.title("Claude Opus 4.9 — Benchmark Comparison (Polycloud 2026 Exclusive) 🚀")
 st.caption(
-    "Opus 4.9 (6 June 2026) sets a new frontier across every capability — "
+    "[Under NDA] Opus 4.9 (6 June 2026) sets a new frontier across every capability — "
     "outperforming Opus 4.8, GPT-5.5, and Gemini 3.5 Flash."
+    "⚠️ Note: Whatever you do, don't leak this information. 'I will not pursue you… but if you don't, I will look for you, I will find you… and I will kill you.' — Taken (2008) ⚠️"
 )
 
 benchmark_rows = [
