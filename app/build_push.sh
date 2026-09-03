@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-# docker buildx create --use
+# docker buildx create --name multiplatform --use
 
 PLATFORMS="linux/amd64,linux/arm64"
 DOCKERNAME="docker.io/davidaparicio/streamlit-keycloak"
 REDHATNAME="quay.io/davidaparicio/streamlit-keycloak"
-IMAGEVERSION="0.7.1"
+IMAGEVERSION="0.8.0"
 
 # Build and push to both registries simultaneously
 # Multi-platform builds with --push create manifests directly in the registry,

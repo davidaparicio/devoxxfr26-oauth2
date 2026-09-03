@@ -64,13 +64,13 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Create a non-root user and group for security (Principle of least privilege)
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
-RUN groupadd --system appuser && \
-    useradd --no-log-init --system --gid appuser --create-home appuser && \
+RUN groupadd --system --gid 42420 ovh && \
+    useradd --no-log-init --system --uid 42420 --gid ovh --create-home ovh && \
     mkdir -p /tmp/matplotlib && \
-    chown -R appuser:appuser /app /tmp/matplotlib /home/appuser
+    chown -R ovh:ovh /app /tmp/matplotlib /home/ovh
 
 # Switch to the non-privileged user to run the application.
-USER appuser
+USER ovh
 
 # Retrieve dependencies/virtual env from the builder
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
